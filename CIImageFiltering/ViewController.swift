@@ -27,18 +27,23 @@ class ViewController: UIViewController {
         UIApplication.shared.isNetworkActivityIndicatorVisible = true
         
         // create the CIImage first
-        let ciImage = CIImage(image: self.imageView.image!)
+        let ciImage = CIImage(image: self.imageView.image!)!
         // create the filter
-        let filter = CIFilter(name: "CIPhotoEffectMono", withInputParameters: [ kCIInputImageKey : ciImage])
+        let monoFilter = CIFilter(name: "CIPhotoEffectMono", withInputParameters: [ kCIInputImageKey : ciImage])
         // need an output image
-        let outputImage = filter!.outputImage
+        let monoOutputImage = monoFilter!.outputImage!
+        
+        // create a second if you desire and chain them together
+        let blurFilter = CIFilter(name: "CIGaussianBlur", withInputParameters: [ kCIInputImageKey : monoOutputImage, kCIInputRadiusKey : 3.0])
+        
+        let finalOutput = blurFilter!.outputImage!
         
         let operationQueue = OperationQueue()
         operationQueue.addOperation {
             // have to use a context to do the work
             let context = CIContext(options: [:])
             // need back a CGImage to actually use
-            let cgImage = context.createCGImage(outputImage!, from: outputImage!.extent)
+            let cgImage = context.createCGImage(finalOutput, from: monoOutputImage.extent)
             let finalOutputImage = UIImage(cgImage: cgImage!)
             
             // now put back on the main thread
